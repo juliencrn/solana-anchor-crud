@@ -9,7 +9,20 @@ Require `node`, `yarn`, `anchor`, `rust` and `solana` installed.
 ```sh
 # Compile the Solana program (smart contract)
 anchor build
+
+anchor test
 ```
+
+### Develop
+
+```sh
+# In 2 terminal panes;
+# 1. Start the Solana blockchain locally
+solana-test-validator
+# 2. Get logs
+solana logs
+```
+
 
 ### Project structure
 

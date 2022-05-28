@@ -1,16 +1,49 @@
 const anchor = require("@project-serum/anchor");
+const assert = require("assert");
+
+const { SystemProgram } = anchor.web3;
 
 describe("mySolanaApp", () => {
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
+  const provider = anchor.AnchorProvider.env()
+  anchor.setProvider(provider);
 
-  it("Is initialized!", async () => {
-    // Add your test here.
-    const program = anchor.workspace.MySolanaApp;
+  const program = anchor.workspace.MySolanaApp;
 
-    // Both way of accessing the program works.
-    // const tx = await program.methods.initialize().rpc();
-    const tx = await program.rpc.initialize();
-    console.log("Your transaction signature", tx);
-  });
+  let _base_account;
+
+  it("Creates a counter", async () => {
+    const baseAccount = anchor.web3.Keypair.generate();
+
+    await program.rpc.create({
+      accounts: {
+        baseAccount: baseAccount.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [baseAccount],
+    });
+
+    /* Fetch the account and check the value of count */
+    const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+
+    assert.ok(account.count.toString() === "0");
+
+    _base_account = baseAccount;
+  })
+
+  it("increments the counter", async () => {
+    const baseAccount = _base_account;
+
+    await program.rpc.increment({
+      accounts: {
+        baseAccount: baseAccount.publicKey,
+      }
+    });
+
+    /* Fetch the account and check the value of count */
+    const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+
+    assert.ok(account.count.toString() === "1");
+  })
 });
